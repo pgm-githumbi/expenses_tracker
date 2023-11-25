@@ -1,25 +1,17 @@
 const express = require("express");
-const Namespace = require("../namespaces");
+
+const {
+  registerUser,
+  loginUser,
+  currentUser,
+} = require("../controllers/userControllers");
 
 const router = express.Router();
 
-const registerNamespace = new Namespace("register", new Namespace("app"));
-const loginNamespace = new Namespace("login", new Namespace("app"));
+router.post("/register", registerUser);
 
-router.post("/register", (req, res) => {
-  registerNamespace.log("registering a user: " + req.body);
-  res.status(200).json({ message: "register user" });
-});
+router.post("/login", loginUser);
 
-router.post("/login", (req, res) => {
-  loginNamespace.log("logging in a user: ", req.body);
-  res.status(200).json({ message: "login user" });
-});
-
-router.get("/current", (req, res) => {
-  const namespace = new Namespace("app").createNewNamespace("current");
-  namespace.log("in current user");
-  res.json({ message: "current user" });
-});
+router.get("/current", currentUser);
 
 module.exports = router;
