@@ -9,6 +9,7 @@ app = express();
 
 app.use(express.json());
 app.use("/api/expenses", require("./routes/expensesRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 app.use(require("./middleware/errorHandler"));
 
 PORT = process.env.PORT || 3000;
