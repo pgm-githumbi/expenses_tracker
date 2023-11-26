@@ -18,8 +18,16 @@ class Namespace {
     return new Namespace(namespaceName, this);
   }
 
+  join(namespaceName) {
+    return this.createNewNamespace(namespaceName);
+  }
+
   getErrorNamespace() {
     return new Namespace("error", this);
+  }
+
+  getStackNamespace() {
+    return new Namespace("stackTrace", this);
   }
 
   getWarningNamespace() {
@@ -36,6 +44,9 @@ class Namespace {
     return this;
   }
 
+  logStack(...args) {
+    debug(this.getStackNamespace().getName())(...args);
+  }
   logWarn(...args) {
     debug(this.getWarnNamespace().getName())(...args);
     return this;
