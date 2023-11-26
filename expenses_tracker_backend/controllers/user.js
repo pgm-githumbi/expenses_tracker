@@ -106,7 +106,7 @@ class User {
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
-    this.response.OK_response(accessToken);
+    this.response.OK_response({ accessToken });
   }
 }
 
