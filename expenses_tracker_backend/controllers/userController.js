@@ -45,7 +45,8 @@ const loginUser = asyncHandler(async (req, res) => {
 //@access public
 const currentUser = asyncHandler(async (req, res) => {
   currentUserNamespace.log("getting the current user: ", req.body);
-  res.status(200).json({ message: "register user" });
+
+  res.status(200).json(req.user);
 });
 
 module.exports = { registerUser, loginUser, currentUser };
