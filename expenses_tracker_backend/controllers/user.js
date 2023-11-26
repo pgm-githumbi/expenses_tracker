@@ -97,9 +97,11 @@ class User {
   async successfullyLoggedIn(user) {
     const accessToken = jwt.sign(
       {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+        },
       },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
