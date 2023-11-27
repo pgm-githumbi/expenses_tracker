@@ -3,6 +3,7 @@ const Expense = require("../models/expensesModel");
 const Joi = require("joi");
 const Namespace = require("../namespaces");
 const validateExpense = require("../validators/expenseValidators");
+const Response = require("../response");
 
 const debug = require("debug");
 
@@ -24,67 +25,127 @@ const deleteExpenseNamespace = new Namespace("deleteExpense", apiNamespace);
 const getExpenses = asyncHandler(async (req, res) => {
   const log = debug(getExpensesNamespace.getName());
   log("getting all expenses");
-  const expenses = await Expense.find();
+  const expenses = await Expense.find({ user_id: req.user._id });
+
   res.status(200).send(expenses);
 });
 
 //@desc get an expense
 //@route GET /api/expense/:id
-//@access public
+//@access private
 const getExpense = asyncHandler(async (req, res) => {
-  const log = getExpenseNamespace.log(`getting expense id : ${req.params.id}`);
+  const namespace = getExpenseNamespace.log(
+    `getting expense id : ${req.params.id}`
+  );
+  const response = new Response(res);
 
-  doExpenseExists(req, res);
+  const expense = await Expense.findById(req.params.id);
+  if (!expense) {
+    namespace.logErr("Cound not find expense with id " + req.params.id);
+    response.notFoundError("Cound not find expense with id " + req.params.id);
+  }
 
-  log("get Expense successful");
-  res.status(200).send(expense);
+  if (req.user._id !== expense.user_id._id.toString()) {
+    namespace.logErr("Not authorised to access this resource");
+    response.unauthorizedError("Not authorised to access this resource");
+  }
+
+  namespace.log("got expense successfully");
+  response.OK_response(expense);
 });
 
 //@desc post an new expense
 //@route POST /api/expenses
-//@access public
+//@access private
 const createExpense = asyncHandler(async (req, res) => {
-  const logger = postExpenseNamespace.log(`create expense body: `, req.body);
+  const namespace = postExpenseNamespace.log(`create expense body: `, req.body);
+  const response = new Response(res);
 
-  validateExpense(req.body, postExpenseNamespace);
+  await validateExpense({
+    expense: req.body,
+    namespace: postExpenseNamespace,
+    response,
+  });
 
-  const expense = await Expense.create({ ...req.body });
-  logger.log("expense created successfully");
-  res.status(201).send(expense);
+  const expenseArgs = { ...req.body, user_id: req.user._id };
+  namespace.log(expenseArgs);
+  const expense = await Expense.create(expenseArgs);
+  if (!expense) {
+    namespace.logErr("Failed to create expense");
+    response.internalServerError("Could not post expense");
+  }
+
+  namespace.log("expense created successfully");
+  response.OK_response(expense);
 });
 
 //@desc update an expense
 //@route PUT /api/expenses/:id
-//@access public
+//@access private
 const updateExpense = asyncHandler(async (req, res) => {
-  const logger = updateExpenseNamespace.log(
-    `update expense: ${req.params.id} with: ${req.body}`
-  );
+  const namespace = updateExpenseNamespace;
+  namespace.log(`update expense: ${req.params.id} with: `, req.body);
+  const response = new Response(res);
 
-  doExpenseExists(req, res, updateExpenseNamespace);
-  validateExpense(req.body, updateExpenseNamespace);
+  const expense = await Expense.findById(req.params.id);
+  if (!expense) {
+    namespace.logErr("Expense not found");
+    response.notFoundError("Expense with id " + req.params.id + " not found");
+  }
 
-  const expense = await Expense.findByIdAndUpdate(req.params.id, {
+  if (req.user._id !== expense.user_id._id.toString()) {
+    namespace.log("Attempting to update another user's resources");
+    response.forbiddenError("The action you're attempting is forbidden");
+  }
+
+  // Will throw if invalid
+  await validateExpense({
+    expense: req.body,
+    response,
+    namespace: updateExpenseNamespace,
+  });
+
+  await Expense.findByIdAndUpdate(req.params.id, {
     ...req.body,
   });
 
-  logger.log("expense update success");
-  res.status(200).send(expense);
+  const updatedExpense = await Expense.findById(req.params.id);
+
+  if (!updatedExpense) {
+    if (!req.body) {
+      namespace.logErr("Failed to update expense");
+      response.internalServerError("Failed to update expense");
+    }
+  }
+
+  namespace.log("Expense update success");
+  response.OK_response(updatedExpense);
 });
 
 //@desc delete an expense
 //@route DELETE /api/expenses/:id
-//@access public
+//@access private
 const deleteExpense = asyncHandler(async (req, res) => {
-  const logger = deleteExpenseNamespace.log(`delete expense: ${req.params.id}`);
+  const namespace = deleteExpenseNamespace.log(
+    `delete expense: ${req.params.id}`
+  );
+  const response = new Response(res);
 
-  doExpenseExists(req, res);
+  const expense = await Expense.findOneAndDelete({ _id: req.params.id });
 
-  const expense = Expense.findByIdAndRemove(req.params.id);
+  if (!expense) {
+    namespace.logErr("Expense not found");
+    response.notFoundError("Expense not found");
+  }
 
-  log.log("expense removed successfully");
+  if (req.user._id !== expense.user_id._id.toString()) {
+    namespace.logErr("Attempting to delete another user's resources");
+    response.forbiddenError("Attempting to delete another user's resources");
+  }
 
-  res.status(200).send(expense);
+  namespace.log("Expense: " + JSON.stringify(expense));
+  namespace.log("Expense successfully deleted:");
+  response.OK_response(expense);
 });
 
 module.exports = {
@@ -95,14 +156,15 @@ module.exports = {
   deleteExpense,
 };
 
-function doExpenseExists(req, res, namespace = null) {
+async function doExpenseExists({ req, namespace, response }) {
   const logger = namespace || new Namespace("app:doesExpenseExists");
   logger.log(`does expense with id ${req.params.id} exist?`);
-  const expense0 = Expense.findById(req.params.id);
+
+  const expense0 = await Expense.findById(req.params.id);
   if (!expense0) {
-    res.status(404);
     logger.log("expense not found");
-    throw new Error(`Expense not found`);
+    response.notFoundError("Expense not found");
   }
   logger.log("it exists");
+  return expense0;
 }

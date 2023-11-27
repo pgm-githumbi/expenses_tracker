@@ -1,7 +1,7 @@
 const Namespace = require("../namespaces");
 const asyncHandler = require("express-async-handler");
 const User = require("./user");
-const Responder = require("./response");
+const Responder = require("../response");
 
 const registerNamespace = new Namespace("register", new Namespace("app"));
 const loginNamespace = new Namespace("login", new Namespace("app"));
@@ -44,7 +44,7 @@ const loginUser = asyncHandler(async (req, res) => {
 //@route GET /api/users/current
 //@access public
 const currentUser = asyncHandler(async (req, res) => {
-  currentUserNamespace.log("getting the current user: ", req.body);
+  currentUserNamespace.log("getting the current user: ", req.user);
 
   res.status(200).json(req.user);
 });

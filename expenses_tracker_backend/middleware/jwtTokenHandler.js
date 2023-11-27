@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
-const Response = require("../controllers/response");
+const Response = require("../response");
 const Namespace = require("../namespaces");
 
 const validateToken = asyncHandler(async (req, res, next) => {
@@ -28,8 +28,9 @@ const validateToken = asyncHandler(async (req, res, next) => {
       response.unauthorizedError("Your'e not authorised");
     }
 
-    namespace.log("User authorised to access resource");
     req.user = decoded.user;
+    namespace.log("User authorised to access resource");
+    namespace.log(req.user);
     next();
   });
 });

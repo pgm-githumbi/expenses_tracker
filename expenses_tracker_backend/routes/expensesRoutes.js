@@ -9,6 +9,7 @@ const {
 
 const router = express.Router();
 
+router.use(require("../middleware/jwtTokenHandler"));
 router.route("/").get(getExpenses).post(createExpense);
 
 router.route("/:id").get(getExpense).put(updateExpense).delete(deleteExpense);

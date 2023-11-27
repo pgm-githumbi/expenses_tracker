@@ -2,7 +2,7 @@ const UserModel = require("../models/userModels");
 const mongoose = require("mongoose");
 const Namespace = require("../namespaces");
 const bcrypt = require("bcrypt");
-const Responder = require("./response");
+const Responder = require("../response");
 const jwt = require("jsonwebtoken");
 
 class User {
