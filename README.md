@@ -15,15 +15,20 @@ Node RESTful api with jwt token-based authentication
 
 The user_id is passed in the req.body
 
-## Installation Instructions
- - Clone this repository
+# Installation Instructions
+- Clone this repository
   ```
   git clone https://github.com/pgm-githumbi/expenses_tracker.git
   cd expenses_tracker/expenses_tracker_backend
   ```
+- You need to have node installed on your system.
 - Install dependencies
   ```
   npm install
+  ```
+- Create a .env in the directory you just cd'ed into.
+  ```
+  node -e "require('fs').writeFileSync('.env', '');"
   ```
 - Define your own .env (environment variable file)
   ```
