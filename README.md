@@ -47,4 +47,10 @@ The user_id is passed in the req.body
 - First register as a user using the /api/register endpoint
 - Then login using the /api/login endpoint and copy the access token to your clipboard
 - Access any other apis passing the access token in the Bearer section in the http header
+# API video
+
+
+
+https://github.com/pgm-githumbi/expenses_tracker/assets/85244060/83b0d143-46df-4a9e-b251-79e67a441a1c
+
 
