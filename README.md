@@ -26,7 +26,7 @@ The user_id is passed in the req.body
   ```
   npm install
   ```
-- Create a .env in the directory you just cd'ed into.
+- Run this command to create a .env in the directory you just cd'ed into.
   ```
   node -e "require('fs').writeFileSync('.env', '');"
   ```
@@ -39,9 +39,11 @@ The user_id is passed in the req.body
   CONNECTION_STRING='a connection string to your own mongodb database'
   ```
 - Install an api client of your choice
-- Run the application
+- Run the application (execute any below)
   ```
   node index.js
+  npm run dev
+  npm run start
   ```
 
 - First register as a user using the /api/register endpoint
